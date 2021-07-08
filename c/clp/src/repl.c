@@ -192,27 +192,30 @@ void ls() {
     printf("\033[0;34m[+] \033[1;32mLS:\n");
 }
 void print_help() {
-    printf("\033[0;34m[+] \033[1;32mHelp:\n");
-    printf("\033[0;34m[+] \033[0;33m\tAbout\033[0m The \033[0;35mdito\033[0m environment REPL.\n");
-    printf("\033[0;34m[+] \033[0;33m\tVersion\033[0m 0.1.0\n");
-    printf("\033[0;34m[+] \033[0;33m\tWebsite\033[0m https://dito.devisa.io/docs\n");
-    printf("\033[0;34m[+] \033[0m");
+    printf("\033[0;34m 1. \033[1;32mHelp:\n");
+    printf("\033[0;34m 2. \033[0;33m\tAbout\033[0m The \033[0;35mdito\033[0m environment REPL.\n");
+    printf("\033[0;34m 3. \033[0;33m\tVersion\033[0m 0.1.0\n");
+    printf("\033[0;34m 4. \033[0;33m\tWebsite\033[0m https://dito.devisa.io/docs\n");
+    printf("\033[0;34m 5. \033[0m");
     printf("\033[1;32mCommands:\n");
-    printf("\033[0;34m[+] \033[0;33m\tls\t\033[0m- Lists current dir's files.\n");
-    printf("\033[0;34m[+] \033[0;33m\tevol\t\033[0m- Runs an evolutionary algo.\n");
-    printf("\033[0;34m[+] \033[0;33m\thelp\t\033[0m- Prints this help message.\n");
-    printf("\033[0;34m[+] \033[0;33m\tquit\t\033[0m- Quits the dito shell.\n");
-    printf("\033[0;34m[+] \033[0m");
+    printf("\033[0;34m 6. \033[0;33m\tls\t\033[0m- Lists current dir's files.\n");
+    printf("\033[0;34m 7. \033[0;33m\tevol\t\033[0m- Runs an evolutionary algo.\n");
+    printf("\033[0;34m 8. \033[0;33m\thelp\t\033[0m- Prints this help message.\n");
+    printf("\033[0;34m 9. \033[0;33m\tquit\t\033[0m- Quits the dito shell.\n");
+    printf("\033[0;34m10. \033[0m");
     printf("\033[1;32mOptions:\n");
-    printf("\033[0;34m[+] \033[0;33m\t-v\t\033[0m- Sets output to verbose level 1.\n");
-    printf("\033[0;34m[+] \033[0;33m\t-d\t\033[0m- Sets output to debug logs.\n");
+    printf("\033[0;34m11. \033[0;33m\t-v\t\033[0m- Sets output to verbose level 1.\n");
+    printf("\033[0;34m12. \033[0;33m\t-d\t\033[0m- Sets output to debug logs.\n");
+}
+char* prompt() {
+    char* prompt = "\n\033[1;36m\033[1;34mdito\033[0;33m \033[1;36m~ \033[1;32m>_\033[0m ";
+    return prompt;
 }
 
 int main(int argc, char** argv) {
     printWelcome("0.1.0");
-    char* prompt = "\n\033 [1;32m[dito] \033[1;34m~ >\033[0m ";
     while(1) {
-        char* inp = readln(prompt);
+        char* inp = readln(prompt());
         addHistory(inp);
         if (strcmp(inp, "evol") == 0) evol();
         else if (strcmp(inp, "ls") == 0) ls();
