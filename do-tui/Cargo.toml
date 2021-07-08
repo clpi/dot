@@ -1,0 +1,18 @@
+[package]
+name = "do-tui"
+version = "0.1.0"
+edition = "2018"
+default-run = "do-tui"
+
+[[bin]]
+name = "do-tui"
+path = "src/main.rs"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+async-std = { version = "1.9.0", features = ["attributes"] }
+crossterm = { version = "0.20.0", features = ["event-stream"] }
+serde = { version = "1.0.126", features = ["derive"] }
+tui = { version = "0.15.0", features = ["crossterm"] }
+surf = "2.2.0"

@@ -1,0 +1,4 @@
+[alias]
+rds = "run -p do-http --bin do-server"
+rd = "run --bin doti"
+rdr = "run -p do-core --bin do-repl"

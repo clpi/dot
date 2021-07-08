@@ -1,0 +1,76 @@
+#!/bin/bash
+
+# set -o errexit -o nounset -o pipefail
+# shopt -s nullglob
+
+RED='\033[0;31m'
+LRED='\033[1;31m'
+GREEN='\033[0;32m'
+LGREEN='\033[1;32m'
+PURP='\033[0;35m'
+LPURP='\033[1;35m'
+CY='\033[0;36m'
+LCY='\033[1;36m'
+YELLOW='\033[0;33m'
+LYELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+LBLUE='\033[1;34m'
+NC='\033[0m' # No Color
+
+# ARG=$2
+BIN=repl
+DPATH="$HOME/dvsa/dito/lib/c/clp"
+OUT="./target/$BIN"
+FPATH="$DPATH/target/$BIN"
+BUILDER=cc
+BUILD=$($BUILDER -std=c99 -Wall ./src/$BIN.c -o ./target/$BIN)
+
+function log() {
+    echo -e "${GREEN}[$(date +%T)] ${LYELLOW}[${BUILDER}]${NC}: $@"
+}
+function help() {
+    echo -e "${LGREEN}dito ${LYELLOW}help${NC}\n\n"
+    echo -e "${LGREEN}Subcommands:${NC}\n"
+    echo -e "\t${GREEN}r | run         ${NC}Builds and runs dito C.\n"
+    echo -e "\t${GREEN}c | clean       ${NC}Removes cached files and binary.\n"
+    echo -e "\t${GREEN}b | build       ${NC}Builds but doesn't run dito.\n"
+    echo -e "\t${GREEN}h | help        ${NC}Prints this help message.\n\n"
+}
+
+function build() {
+    echo -e ""
+    log "${YELLOW}BUILDING${NC} binary at ${CY}$OUT${NC}..."
+    START=$(date +%s.%N)
+    $BUILD
+    DUR=$(echo -e "$(date +%s.%N) - $START" | bc)
+    log "${LYELLOW}BUILT${NC} ${CY}$OUT${NC} in ${LBLUE}$DUR${NC}(s)."
+}
+function run() {
+    log "${GREEN}RUNNING${NC} binary at ${CY}$OUT${NC}..."
+    START=$(date +%s.%N)
+    $OUT
+    DUR=$(echo -e "$(date +%s.%N) - $START" | bc)
+    log "${LGREEN}FINISHED${NC} in ${LBLUE}$DUR${NC}(s)."
+}
+
+case $1 in
+    r | run)
+        case $2 in
+            clang) BUILDER=clang ;;
+            gcc)   BUILDER=gcc ;;
+            cc)    BUILDER=cc ;;
+            zig)   BUILDER="zig cc" ;;
+            *)       BUILDER=cc ;;
+        esac
+        build
+        run
+    ;;
+
+    "c" | "clean") log "${LBLUE}Cleaning!${NC}"; rm -rf ./target/* ;;
+    "b" | "build") log "${LGREEN}Building!${NC}" ;;
+    "h" | "help")  log "${LYELLOW}Help${NC}" ;;
+    *)
+        build
+        run
+        ;;
+esac

@@ -1,0 +1,14 @@
+[package]
+name = "do-core"
+version = "0.1.0"
+edition = "2018"
+default-run = "do-repl"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[[bin]]
+name = "do-repl"
+path = "src/bin/do-repl.rs"
+
+
+[dependencies]
+async-std = { version = "1.9.0", features=["attributes"]}
