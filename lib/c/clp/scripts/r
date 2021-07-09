@@ -1,0 +1,223 @@
+#!/bin/bash
+set -e; set -u; set -o pipefail
+
+# set -o errexit -o nounset -o pipefail
+# shopt -s nullglob
+
+R='\033[0;31m'; LR='\033[1;31m'; G='\033[0;32m'; LG='\033[1;32m'
+P='\033[0;35m'; LP='\033[1;35m'; C='\033[0;36m'; LC='\033[1;36m'
+Y='\033[0;33m'; LY='\033[1;33m'; B='\033[0;34m'; LB='\033[1;34m'; N='\033[0m'
+
+
+function _usage() {
+  cat <<help_message
+--- script subcommand -------------------------------------------------------------
+${LG}dito ${N}script usage guide.
+${B}VERSION: ${N}0.1.0-development (2021)
+${B}DOCUMENTATION: ${N} dito.dvsa.io/docs
+
+${LG}USAGE:${N}
+   ${G}doti${N} ${B}[SUBCOMMAND] ${Y}[OPTS]${N} ${N}
+
+${LG}SUBCOMMANDS:${N}
+${Y}  new   | n${C} <NAME>${N}           Initialize a new dito spec
+${Y}  run   | r${C} <MODULE>${N}         Build, then run the default or chosen module.
+${Y}  build | b${C} <MODULE>${N}         Build a binary from a module.
+${Y}  clean | c${C}${N}                  Clean any files and binaries from other builds.
+${Y}  help  | h${C}${N}                  Princt out this usage information.
+${Y}  repl  | R${C}${N}                  Start the read-eval-print-loop module.
+
+${LG}ARGUMENTS:${N}
+${Y}  <NAME>  ${N}                   [Required] The name of the pakcage to initialize.
+${Y}  <MODULE>  ${N}                 The name of the module in /src. Defaults to main.
+
+${LG}FLAGS:${N}
+${Y}  -c | --compile ${C}<COMPILER>${N}  Specify the compiler to use when building.
+${Y}  -m | --module ${C}<MODULE>${N}     Specify the name of the module in the src folder.
+${Y}  -f | --folder ${C}<FOLDER>${N}     Specify the build folder to write the binary to.
+${Y}  -w | --working ${C}<WORKDIR>${N}   Specify the working dir for the code.
+${Y}  -o | --out ${C}<BINARY>${N}        Specify the name of the output binary.
+${Y}  -v | --verbose${C}${N}             Produce verbose debugging output during execution
+${Y}  -h | --help${C}${N}                Princt out this usage information.
+${Y}  -t | --time${C}${N}                Display time info in log output.
+${Y}  -d | --debug${C}${N}               Print out debug log info and traces during execution.
+help_message
+return 1
+}
+# OPTSPEC=":htdvf:o:m:c-:"
+OPTSPEC=:htdvf:o:m:c:-
+
+# DEFAULT ARG VALUES
+BUILD=0
+RUN=0;
+VERBOSE=0
+TIME=0
+MODULE=main
+OUT=$MODULE
+SRCDIR="./src"
+BUILDDIR="./target"
+WDIR="$HOME/dvsa/dito/lib/c/clp"
+REL_OUT=${BUILDDIR}/${OUT}
+ABS_OUT=${WDIR}${REL_OUT}
+COMPILER=gcc
+
+BUILDCMD=$($COMPILER -std=c99 -Wall $SRCDIR/$MODULE.c -o $BUILDDIR/$OUT)
+
+# Takes two args: First is whether command is successful (0) or error(1)
+#   Second is the string to print out. If only 1 cmd is given, will print out OK string
+function log() {
+    STATUS=0
+    COLOR_DATE=$G; COLOR_COMPILER=$LY
+    if [ -z "$1" ]; then
+        case $1 in
+            2 ) COLOR_DATE=$G;  COLOR_COMPILER=$LY ;;  # info / success log
+            1 ) COLOR_DATE=$Y,  COLOR_COMPILER=$Y  ;;  # warning log
+            0 ) COLOR_DATE=$LR, COLOR_COMPILER=$R  ;;  # error log
+            * ) log 2 "${LR}ERR: ${R}Status int must be 0, 1, or 2"; exit 1 ;;
+        esac
+        STATUS=$1
+    fi
+    if [ $VERBOSE==1 ]; then
+        if [ $TIME==1 ]; then
+            PRE="${COLOR_DATE}[$(date +%T)] ${COLOR_COMPILER}[${STATUS}, ${COMPILER}]${N}"
+        fi
+        PRE="${COLOR_COMPILER}[${STATUS}, ${COMPILER}]${N}"
+        echo -e "$PRE: $@"
+    else
+        echo -e "${COLOR_COMPILER}${COMPILER} ${N}"
+    fi
+}
+function subcmd() {
+    ((!$#)) && log 1 "${LY}No args given.${N} Proceeding with defaults."
+    case $1 in
+        n|new)    BUILD=1;RUN=1                                      ;;
+        b|build)  BUILD=1                                            ;;
+        r|run)    BUILD=1; RUN=1                                     ;;
+        R|repl)   MODULE=repl;BIN=repl;BUILD=1; RUN=1                ;;
+        h|help)   usage; exit 0                                      ;;
+        c|clean)  rm -rf $OUT/*; log "${LB}Cleaned $OUT!${N}"; exit 0;;
+    esac
+    shift
+    return 0
+}
+function get_module() {
+    if [ "$#" -eq "0" ]; then
+        log 2 "${LR}ERR: ${R}No module was specified.${N}"
+        log 2 "${R}Please specify a module in ${C}$OUT${N}."
+        exit 1
+    fi
+    case $1 in
+        main )  MODULE=main ;;
+        queue)  MODULE=queue;;
+        repl )  MODULE=repl ;;
+        db   )  MODULE=db   ;;
+        parse)  MODULE=parse;;
+        ui   )  MODULE=ui   ;;
+           * )
+                log 2 "${LR}ERR:${R} Module $1 not found in folder."
+                log 2 "${R}Please specify a module in ${C}$OUT${N}."
+                exit 1
+                ;;
+    esac
+    OUT=$MODULE
+    return 0;
+}
+function set_compiler() {
+    if [ "$#" -eq "0" ]; then
+        log 1 "${LR}[ERROR!]${R} Invalid compier specified."
+        log 1 "${R}Available compiler options are:"
+        log 1 "${Y}\tclang\n\tgcc\n\tcc\n\tzig"
+        log 1 "${Y} Proceeding with CC compiler..."
+        COMPILER=gcc
+        return 1
+    fi
+    case $1 in
+        clang) COMPILER=clang ;;
+        gcc)   COMPILER=gcc ;;
+        cc)    COMPILER=cc ;;
+        zig)   COMPILER="zig cc" ;;
+        *)
+            log 1 "${LY}Invalid compier specified."
+            log 1 "${Y}Available compiler options are:"
+            log 1 "${Y}\tclang\n\tgcc\n\tcc\n\tzig"
+            log 1 "${Y} Proceeding with CC compiler..."
+            COMPILER=gcc
+            return 1
+            ;;
+    esac
+    return 0;
+}
+function get_opts() {
+    if [ "$#" -eq "0" ]; then
+        log 0 "${Y}No opts provided. Proceeding with defaults${N}"
+        return 0
+    fi
+    while getopts "$OPTSPEC" OPTCH; do
+        case ${OPTCH} in
+             m) MODULE=${OPTARG}    ;;
+             c) COMPILER=${OPTARG}  ;;
+             w) WDIR=${OPTARG}      ::
+             f) BUILDDIR=${OPTARG}  ::
+             o) OUT=${OPTARG}       ;;
+             v) VERBOSE=1           ;;
+             d) DEBUG=1             ;;
+             t) TIME=1              ;;
+             h) usage;  exit 0      ;;
+             :) log 1 "${R}No opts given - proceeding with defaults" ;;
+            \?) log 2 "${R}Invalid opt: -$OPTCH" 1>&2; usage; exit 1 ;;
+             -)
+                case ${} in
+                    -module)    MODULE=${OPTARG}   ;;
+                    -compiler)  COMPILER=${OPTARG} ;;
+                    -workdir)   WDIR=${OPTARG}     ;;
+                    -folder)    BUILDDIR=${OPTARG} ;;
+                    -out)       OUT=${OPTARG}      ;;
+                    -verbose)   VERBOSE=1          ;;
+                    -debug)     DEBUG=1            ;;
+                    -time)      TIME=1             ;;
+                    -help)      usage; exit 0      ;;
+                    : ) log 2 "${R}Invalid opt received.${N}"; usage; exit 1 ;;
+                    \?) log 2 "${R}Invalid opt: -$OPTCH" 1>&2; usage; exit 1 ;;
+                esac
+                shift $((OPTIND -1))
+                ;;
+        esac
+    done
+    shift $((OPTIND -1))
+    build
+    run
+}
+function build() {
+    log 0 "${Y}BUILDING${N} binary at ${C}$OUT${N}..."
+    START=$(date +%s.%N)
+    $BUILDCMD
+    DUR=$(echo -e "$(date +%s.%N) - $START" | bc)
+    log 0 "${LY}BUILT${N} ${C}$OUT${N} in ${LB}$DUR${N}(s)."
+    return 0
+}
+function run() {
+    log 0 "${G}RUNNING${N} binary at ${C}$OUT${N}..."
+    START=$(date +%s.%N)
+    $OUT
+    DUR=$(echo -e "$(date +%s.%N) - $START" | bc)
+    log 0 "${LG}FINISHED${N} in ${LB}$DUR${N}(s)."
+    return 0
+}
+
+function parse_subcmd() {
+
+}
+
+function main() {
+    if [ "$#" -eq "0" ]; then
+        log 1 "${Y}No subcommands or opts given. Proceeding with defaults.${N}"
+    else
+        SUBC=$1; shift
+        subcmd $SUBC
+
+
+        parse_args "${@}"
+
+    fi
+    return 0
+}

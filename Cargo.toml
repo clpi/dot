@@ -28,4 +28,14 @@ rds = "run --bin doti-server"
 rd = "run --bin doti"
 
 [workspace]
-members = ["do-tui", "do-http", "do-rpc", "do-core", "do-core/cloud"]
+members = [
+  "do-tui",
+  "do-http",
+  "do-rpc",
+  "do-core",
+  "do-core/cloud"
+]
+exclude = []
+
+[profile.dev]
+split-debuginfo = "unpacked"
