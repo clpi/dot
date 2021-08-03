@@ -14,5 +14,7 @@ path = "src/main.rs"
 async-std = { version = "1.9.0", features = ["attributes"] }
 crossterm = { version = "0.20.0", features = ["event-stream"] }
 serde = { version = "1.0.126", features = ["derive"] }
-tui = { version = "0.15.0", features = ["crossterm"] }
+tui = { version = "0.15.0", features = ["serde", "crossterm"] }
 surf = "2.2.0"
+argh = "0.1.5"
+rand = "0.8.4"

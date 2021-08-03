@@ -57,13 +57,13 @@ MODULE=repl
 OUT=$MODULE
 SRCDIR="src/"
 BUILDDIR="target/"
-WDIR="$HOME/dvsa/doti/lib/c/clp/"
-REL_OUT="$BUILDDIR$OUT"
-ABS_OUT="$WDIR$REL_OUT"
-COMPILER=cc
+WDIR="$HOME/dvsa/dito/lib/c/clp/"
+REL_OUT=${BUILDDIR}${OUT}
+ABS_OUT=${WDIR}${REL_OUT}
+COMPILER=clang
 
 BUILDCMD=$($COMPILER -std=c99 -Wall $SRCDIR/$MODULE.c -o $BUILDDIR/$OUT)
-RUNCMD=$ABS_OUT
+RUNCMD=$BUILDDIR$OUT
 
 # Takes two args: First is whether command is successful (0) or error(1)
 #   Second is the string to print out. If only 1 cmd is given, will print out OK string
@@ -84,9 +84,9 @@ function log() {
             PRE="${COLOR_DATE}[$(date +%T)] ${COLOR_COMPILER}[${STATUS}, ${COMPILER}]${N}"
         fi
         PRE="${COLOR_COMPILER}[${STATUS}, ${COMPILER}]${N}"
-        echo -e "$PRE: $@"
-    else
-        echo -e "${COLOR_COMPILER}${COMPILER} ${N}"
+        # echo -e "$PRE: $@"
+    # else
+        # echo -e "${COLOR_COMPILER}${COMPILER} ${N}"
     fi
 }
 function subcmd() {
@@ -190,17 +190,17 @@ function get_opts() {
     run
 }
 function build() {
-    log 0 "${Y}BUILDING${N} binary at ${C}$OUT${N}..."
+    log 0 "${Y}BUILDING${N} binary at ${C}$SRCDIR$MODULE${N}..."
     START=$(date +%s.%N)
     $BUILDCMD
-    DUR=$(echo -e "$(date +%s.%N) - $START" | bc)
+    DUr=$(echo -e "$(date +%s.%N) - $START" | bc)
     log 0 "${LY}BUILT${N} ${C}$OUT${N} in ${LB}$DUR${N}(s)."
     return 0
 }
 function run() {
-    # echo -e "${G}RUNNING${N} binary at ${C}$OUT${N}..."
+    log 0 "${G}RUNNING${N} binary at ${C}$BUILDDIR$OUT{N}..."
     START=$(date +%s.%N)
-    $BIN
+    $RUNCMD
     DUR=$(echo -e "$(date +%s.%N) - $START" | bc)
     log 0 "${LG}FINISHED${N} in ${LB}$DUR${N}(s)."
     return 0

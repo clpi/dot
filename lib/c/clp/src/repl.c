@@ -298,7 +298,7 @@ char* readln(char* prompt) {
 }
 // ☘ 	 𝚫⛬  ⛶  ᐃ  	𝛥 𝚫
 void printWelcome(char* version) {
-    puts("\033[0;36m  \033[1;34m｜\033[0;33m 𝚫 \033[1;34mdito\033[1;35m+ \033[1;33mREPL\033[1;35m \033[0m by \033[0;34mDevisa \033[0;36m(2021)\033[0m");
+    puts("\033[0;36m  \033[1;34m｜\033[0;33m 𝚫 \033[1;32mdito\033[1;35m+ \033[1;33mREPL\033[1;35m \033[0m by \033[0;34mDevisa \033[0;36m(2021)\n\033[0m");
     puts("\033[0;36m  \033[1;34m｜\033[1;32m Version \033[0m0.1.0-development\033[0m");
     puts("\033[0;36m  \033[1;34m｜\033[1;32m Authors \033[0mChris Pecunies\033[0m");
     puts("\033[0;36m  \033[1;34m｜");
@@ -309,17 +309,33 @@ void printWelcome(char* version) {
     puts("\033[0;36m  \033[1;34m｜");
 }
 void ls(char* inp) {
-    printf("\033[0;36m 1\033[1;34m｜\033[1;34minput: \033[0;32m[ls]\n");
+    /* printf("\033[0;36m 4\033[1;34m｜\033[0m");
+    char cmd[30];
+    char cmd_fmt[20];
+    strcpy(cmd, inp);
+    strcpy(cmd_fmt,"echo \033[0;36m 1\033[1;34m｜\033[0m");
+    strcat(cmd_fmt, cmd); */
+    printf("\033[0;36m 1\033[1;34m｜\033[0m");
+    char cmd[10];
+    char cmdf[20];
+    strcpy(cmd, inp);
+    strcpy(cmdf, "echo \"     ");
+    strcat(cmdf, "\"");
+    strcat(cmdf, cmd);
+    /* printf("\033[0;36m 1\033[1;34m｜\033[1;34minput: \033[0;32m[ls]\n");
     printf("\033[0;36m 2\033[1;34m｜\033[0;33m ∙ \033[0;33mcommand: \033[0mls\n");
     printf("\033[0;36m 2\033[1;34m｜\033[0;33m ∙ \033[0;33mexact: \033[0m%s\n", inp);
-    printf("\033[0;36m 2\033[1;34m｜\n");
-    printf("\033[0;36m 3\033[1;34m｜\033[1;34moutput: \033[0;32mls\n");
-    printf("\033[0;36m 4\033[1;34m｜\033[0m");
-    system(inp);
+    printf("\033[0;36m 2\033[1;34m｜\n"); */
+    // printf("\033[0;36m 3\033[1;34m｜\033[1;34moutput: \033[0;32mls\n");
+    system(cmd);
 }
 void cat(char* inp) {
     printf("\033[0;34m[+] \033[1;32mCAT:\033[0m Running cat %s\n", inp);
     system(inp);
+}
+void date() {
+    printf("\033[0;34m[+] \033[1;32mDATE:\033[0m Running date \n");
+    system("date");
 }
 void edit(char* inp) {
     printf("\033[0;34m[+] \033[1;32mEDIT:\033[0m Running edit cmd %s\n", inp);
@@ -351,16 +367,18 @@ void print_help() {
     printf("\033[0;36m12\033[1;34m｜\033[0;33m  ∘ -d\t\033[0m  Sets output to debug logs.\n");
 }
 // Db: ⛁
-//  ∴
+//  ∴   →
 // \033[1;34m+
+//𝚫 ☰  ❯  ≡
 char* prompt() {
-    char* prompt = "\033[1;34m \033[1;34m｜\033[0;32m\033[0;32m𝚫\033[1;34m dito \033[0;33mat\033[0;34m ~ \033[0;32m\033[1;33m ∴\033[0m ";
+    char* prompt = "\033[1;34m \033[1;34m｜\033[0;32m\033[0;33m ∴\033[1;32m dito \033[0;34mat\033[1;33m ~ \033[0;32m\033[1;32m→\033[0m ";
+
     return prompt;
 }
 void open() {
     FILE *infile, *outfile;
-    int lineNo = 0;
-    char line[512];
+    // int lineNo = 0;
+    // char line[512];
     const char *ifilename = "readings.txt";
     outfile = fopen("V0.txt", "w");
     infile = fopen(ifilename, "rb");
@@ -387,6 +405,7 @@ int main(int argc, char** argv) {
         else if (startsWith(inp, "edit")) edit(inp);
         else if (startsWith(inp, "find")) find();
         else if (startsWith(inp, "sub")) sub();
+        else if (startsWith(inp, "date")) date();
         else if ((startsWith(inp, "help")) | (startsWith(inp, "h"))) print_help();
         else {
             char * inp_tok = strtok(inp, " ");
